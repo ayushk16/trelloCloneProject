@@ -70,33 +70,47 @@ async function fun() {
     listen();
 }
 
+
+// create new list
+
 async function createNewList(value) {
-    console.log(value);
-    let newvalue = value.replace(" ", "%20");
-    // console.log(newvalue);
-    // console.log(`https://api.trello.com/1/boards/${boardId}/lists?name=${value}&${lasturl}`);
-    const response = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?name=${newvalue}&${lasturl}`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json'
-        }
-    });
-    console.log(response);
-    fun();
+    try {
+        console.log(value);
+        let newvalue = value.replace(" ", "%20");
+        // console.log(newvalue);
+        // console.log(`https://api.trello.com/1/boards/${boardId}/lists?name=${value}&${lasturl}`);
+        const response = await fetch(`https://api.trello.com/1/boards/${boardId}/lists?name=${newvalue}&${lasturl}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const responseData = await response.json();
+        console.log(responseData);
+        fun();
+    } catch (error) {
+        console.log(error);
+    }
 }
+
 
 //  getting all cards on board
 
 async function getAllCards(listId) {
-    const cardsString = await fetch(`https://api.trello.com/1/lists/${listId}/cards?${lasturl}`, {
-        method: "GET",
-        headers: {
-            'Accept': 'application/json'
-        }
-    });
-    const card = await cardsString.json();
-    return card;
+    try {
+        const cardsString = await fetch(`https://api.trello.com/1/lists/${listId}/cards?${lasturl}`, {
+            method: "GET",
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const card = await cardsString.json();
+        return card;
+    } catch (error) {
+        console.log(error);
+    }
 }
+
 
 // display all cards on board
 
@@ -108,18 +122,20 @@ async function displayAllCards() {
     }
 }
 
+
 // display all cards on a list
 
 async function displayAllCardsInList(listElement) {
     loader.style.display = "block";
-    // console.log(listElement)
     const listId = listElement.getAttribute("data-id");
-    // console.log(listElement.getAttribute("data-id"));
     const cardlist = listElement.children[1];
+
     while (cardlist.hasChildNodes()) {
         cardlist.removeChild(cardlist.firstChild);
     }
+
     const cards = await getAllCards(listId);
+
     for (const card of cards) {
         // console.log(card.name);
         const newcard = document.createElement('li');
@@ -140,6 +156,8 @@ async function displayAllCardsInList(listElement) {
     }
     loader.style.display = "none";
 }
+
+
 
 // create new card in a list and update list
 
@@ -228,6 +246,7 @@ async function updateCard(editingPallet, cardId) {
             }
         })
         listen();
+        return;
 
     } catch (error) {
         console.log(error);
@@ -380,11 +399,13 @@ function listen() {
     const addListBtnArray = Array.from(addListBtns);
     addListBtnArray.forEach((addListBtn) => {
         addListBtn.addEventListener('click', (e) => {
-            if (e.target.previousElementSibling.value != "") {
-                const listNameValue = e.target.previousElementSibling.value
+            if (e.target.previousElementSibling.value !== "") {
+                const listNameValue = e.target.previousElementSibling.value;
                 console.log(listNameValue)
+
                 createNewList(listNameValue);
-                return listen();
+                addListBtn.parentElement.style.display = "none";
+                addListBtn.parentElement.previousElementSibling.style.display = "block";
             }
             else {
                 console.log("false")
